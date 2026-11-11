@@ -1,16 +1,19 @@
+
 -- ============================================
 -- LAB ASSIGNMENT - 8
--- SET OPERATORS
+-- SOLVING PROBLEMS USING SET OPERATORS
 -- MYSQL WORKBENCH
 -- ============================================
 
 CREATE DATABASE IF NOT EXISTS LAB8;
 USE LAB8;
 
+-- ============================================
+-- QUESTION 1: CREATE SPORTS_STUD TABLE
+-- ============================================
 
--- ============================================
--- 1. CREATE SPORTS_STUD TABLE
--- ============================================
+DROP TABLE IF EXISTS Cultural_Stud;
+DROP TABLE IF EXISTS Sports_Stud;
 
 CREATE TABLE Sports_Stud
 (
@@ -20,16 +23,12 @@ CREATE TABLE Sports_Stud
     SPORTS_FEE INT,
 
     CONSTRAINT PK_SPORTS PRIMARY KEY (ROLL),
-
     CONSTRAINT UQ_SPORTS_NAME UNIQUE (NAME),
-
     CONSTRAINT CHK_SPORTS_DEPT
     CHECK (DEPT IN ('IT','CS')),
-
     CONSTRAINT CHK_SPORTS_FEE
     CHECK (SPORTS_FEE >= 1000)
 );
-
 
 -- INSERT DATA INTO SPORTS_STUD
 
@@ -52,16 +51,12 @@ CREATE TABLE Cultural_Stud
     CUL_FEES INT,
 
     CONSTRAINT PK_CULTURAL PRIMARY KEY (ROLL),
-
     CONSTRAINT UQ_CULTURAL_NAME UNIQUE (NAME),
-
     CONSTRAINT CHK_CULTURAL_DEPT
     CHECK (DEPT IN ('IT','CS')),
-
     CONSTRAINT CHK_CULTURAL_FEES
     CHECK (CUL_FEES >= 600)
 );
-
 
 -- INSERT DATA INTO CULTURAL_STUD
 
@@ -77,13 +72,12 @@ INSERT INTO Cultural_Stud VALUES
 -- DISPLAY BOTH TABLES
 
 SELECT * FROM Sports_Stud;
-
 SELECT * FROM Cultural_Stud;
 
 
 -- ============================================
--- 2. DISPLAY ALL DISTINCT STUDENTS
--- USING UNION
+-- QUESTION 2
+-- DISPLAY ALL DISTINCT STUDENTS
 -- ============================================
 
 SELECT ROLL, NAME, DEPT
@@ -96,8 +90,8 @@ FROM Cultural_Stud;
 
 
 -- ============================================
--- 3. DISPLAY ALL STUDENTS INCLUDING DUPLICATES
--- USING UNION ALL
+-- QUESTION 3
+-- DISPLAY ALL STUDENTS INCLUDING DUPLICATES
 -- ============================================
 
 SELECT ROLL, NAME, DEPT
@@ -110,8 +104,8 @@ FROM Cultural_Stud;
 
 
 -- ============================================
--- 4. DISPLAY STUDENTS WORKING IN BOTH GROUPS
--- USING INTERSECT
+-- QUESTION 4
+-- DISPLAY STUDENTS WORKING IN BOTH GROUPS
 -- ============================================
 
 SELECT ROLL, NAME, DEPT
@@ -124,8 +118,8 @@ FROM Cultural_Stud;
 
 
 -- ============================================
--- 5. DISPLAY STUDENTS WORKING ONLY IN SPORTS
--- USING EXCEPT
+-- QUESTION 5
+-- DISPLAY STUDENTS WORKING ONLY IN SPORTS
 -- ============================================
 
 SELECT ROLL, NAME, DEPT
@@ -138,8 +132,8 @@ FROM Cultural_Stud;
 
 
 -- ============================================
--- 6. DISPLAY STUDENTS WORKING ONLY IN CULTURAL
--- USING EXCEPT
+-- QUESTION 6
+-- DISPLAY STUDENTS WORKING ONLY IN CULTURAL
 -- ============================================
 
 SELECT ROLL, NAME, DEPT
@@ -152,7 +146,8 @@ FROM Sports_Stud;
 
 
 -- ============================================
--- 7. DISPLAY ROLL, SPORTS FEE AND CULTURAL FEE
+-- QUESTION 7
+-- DISPLAY ROLL, SPORTS FEE AND CULTURAL FEE
 -- OF STUDENTS WORKING IN BOTH GROUPS
 -- ============================================
 
@@ -166,7 +161,8 @@ ON S.ROLL = C.ROLL;
 
 
 -- ============================================
--- 8. ADD BIRTHDAY COLUMN TO BOTH TABLES
+-- QUESTION 8
+-- ADD BIRTHDAY COLUMN TO BOTH TABLES
 -- ============================================
 
 ALTER TABLE Sports_Stud
@@ -203,13 +199,147 @@ END;
 -- DISPLAY UPDATED TABLES
 
 SELECT * FROM Sports_Stud;
-
 SELECT * FROM Cultural_Stud;
 
 
 -- ============================================
--- 9. DISPLAY DISTINCT STUDENT NAME, AGE
+-- QUESTION 9
+-- DISPLAY DISTINCT STUDENT NAME, AGE
 -- AND MONTH OF BIRTH
 -- ============================================
 
 SELECT
+NAME,
+TIMESTAMPDIFF(YEAR, BIRTHDAY, CURDATE()) AS AGE,
+MONTHNAME(BIRTHDAY) AS MONTH_OF_BIRTH
+FROM
+(
+    SELECT ROLL, NAME, BIRTHDAY
+    FROM Sports_Stud
+
+    UNION
+
+    SELECT ROLL, NAME, BIRTHDAY
+    FROM Cultural_Stud
+) AS STUDENTS;
+
+
+-- ============================================
+-- QUESTION 10
+-- DISPLAY LAST DAY OF BIRTH MONTH
+-- USING SET OPERATOR
+-- ============================================
+
+SELECT
+NAME,
+LAST_DAY(BIRTHDAY) AS LAST_DAY_OF_BIRTH_MONTH
+FROM Sports_Stud
+
+UNION
+
+SELECT
+NAME,
+LAST_DAY(BIRTHDAY) AS LAST_DAY_OF_BIRTH_MONTH
+FROM Cultural_Stud;
+
+
+-- ============================================
+-- QUESTION 11
+-- DISPLAY SPORTS STUDENT DETAILS
+-- IN SENTENCE FORMAT
+-- ============================================
+
+SELECT CONCAT(
+NAME,
+' who studies in ',
+DEPT,
+' dept pays Rs',
+SPORTS_FEE,
+' for sports.'
+) AS STUDENT_DETAILS
+FROM Sports_Stud;
+
+
+-- ============================================
+-- QUESTION 12
+-- DISPLAY ALL STUDENTS FROM IT DEPARTMENT
+-- ============================================
+
+SELECT ROLL, NAME, DEPT
+FROM Sports_Stud
+WHERE DEPT = 'IT'
+
+UNION
+
+SELECT ROLL, NAME, DEPT
+FROM Cultural_Stud
+WHERE DEPT = 'IT';
+
+
+-- TOTAL MONEY EARNED FROM SPORTS DEPARTMENT
+
+SELECT
+SUM(SPORTS_FEE) AS TOTAL_SPORTS_MONEY
+FROM Sports_Stud;
+
+
+-- TOTAL MONEY EARNED FROM CULTURAL DEPARTMENT
+
+SELECT
+SUM(CUL_FEES) AS TOTAL_CULTURAL_MONEY
+FROM Cultural_Stud;
+
+
+-- ============================================
+-- QUESTION 13
+-- DISPLAY ALL STUDENT NAMES IN DESCENDING ORDER
+-- ============================================
+
+SELECT NAME
+FROM
+(
+    SELECT NAME FROM Sports_Stud
+
+    UNION
+
+    SELECT NAME FROM Cultural_Stud
+) AS STUDENTS
+ORDER BY NAME DESC;
+
+
+-- ============================================
+-- QUESTION 14
+-- DROP ALL DOMAIN CONSTRAINTS
+-- FROM BOTH TABLES
+-- ============================================
+
+ALTER TABLE Sports_Stud
+DROP CHECK CHK_SPORTS_DEPT;
+
+ALTER TABLE Sports_Stud
+DROP CHECK CHK_SPORTS_FEE;
+
+ALTER TABLE Cultural_Stud
+DROP CHECK CHK_CULTURAL_DEPT;
+
+ALTER TABLE Cultural_Stud
+DROP CHECK CHK_CULTURAL_FEES;
+
+
+-- ============================================
+-- QUESTION 15
+-- DISPLAY MAXIMUM, MINIMUM AND
+-- AVERAGE SPORTS FEE
+-- ============================================
+
+SELECT
+MAX(SPORTS_FEE) AS MAXIMUM_FEE,
+MIN(SPORTS_FEE) AS MINIMUM_FEE,
+AVG(SPORTS_FEE) AS AVERAGE_FEE
+FROM Sports_Stud;
+
+
+-- ============================================
+-- END OF LAB ASSIGNMENT - 8
+-- ============================================
+
